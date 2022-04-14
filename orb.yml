@@ -1,0 +1,35 @@
+version: 2.1
+
+description: Cheese! Take a screenshot on Windows with a single command.
+
+display:
+  home_url: "https://makotom.org/"
+  source_url: "https://github.com/circle-makotom-orbs/windows-screenshot"
+
+commands:
+  take-screenshot:
+    parameters:
+      output:
+        description: The path of the screenshot to be generated
+        type: string
+        default: screenshot.png
+      nircmd-dir:
+        description: The path where NirCmd will be extracted
+        type: string
+        default: C:\\Users\\circleci\\AppData\\Local\\Temp
+    steps:
+      - run:
+          name: Take a screenshot
+          shell: powershell.exe
+          command: |
+            $ErrorActionPreference = "Stop"
+
+            Push-Location "${env:NIRCMD_DIR}"
+            Invoke-WebRequest -OutFile nircmd-x64.zip https://www.nirsoft.net/utils/nircmd-x64.zip
+            Expand-Archive nircmd-x64.zip
+            Pop-Location
+
+            & "${env:NIRCMD_DIR}\\nircmd-x64\\nircmd.exe" savescreenshot "${env:OUTPUT_PATH}"
+          environment:
+            OUTPUT_PATH: << parameters.output >>
+            NIRCMD_DIR: << parameters.nircmd-dir >>

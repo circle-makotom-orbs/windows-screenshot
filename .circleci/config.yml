@@ -1,0 +1,28 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: archlinux
+    environment:
+      ORB_NAME: circle-makotom-orbs/windows-screenshot
+      ORB_BASE_VERSION: "0.0"
+      ORB_CONFIG: orb.yml
+    steps:
+      - run:
+          name: Install CircleCI CLI
+          command: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | bash
+      - checkout
+
+      - run:
+          name: Validate orb
+          command: circleci orb validate "${ORB_CONFIG}"
+      - when:
+          condition:
+            equal:
+              - << pipeline.git.branch >>
+              - main
+          steps:
+            - run:
+                name: Publish orb
+                command: circleci orb publish "${ORB_CONFIG}" "${ORB_NAME}@${ORB_BASE_VERSION}.${CIRCLE_BUILD_NUM}"
